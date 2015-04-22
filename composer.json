@@ -15,6 +15,7 @@
         "illuminate/routing": "~5",
         "illuminate/session": "~5",
         "illuminate/support": "~5",
+        "setasign/fpdi": "dev-master",
         "tecnick.com/tcpdf": "dev-master"
     },
     "autoload": {

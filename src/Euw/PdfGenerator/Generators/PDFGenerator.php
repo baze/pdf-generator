@@ -29,14 +29,19 @@ class PDFGenerator implements PDFGeneratorInterface {
         return $this->renderer->download($fileName);
     }
 
-    public function attachment()
+    public function attachment($fileName = 'coupon.pdf')
     {
-        return $this->renderer->attachment();
+        return $this->renderer->attachment($fileName);
     }
 
-    public function saveToFile($fileName)
+    public function toString()
     {
-        return $this->renderer->saveToFile($fileName);
+        return $this->renderer->toString();
+    }
+
+    public function saveToFile($fileName, $path)
+    {
+        return $this->renderer->saveToFile($fileName, $path);
     }
 
     public function setTargetId($id)

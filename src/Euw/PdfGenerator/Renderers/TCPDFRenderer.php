@@ -33,13 +33,16 @@ class TCPDFRenderer implements PDFRendererInterface
 
         $this->addPage();
 
-        $this->drawBackground();
+        if ($this->layout->backgroundImage) {
+            $this->drawBackground();
+        }
 
         if ($this->cropMarks) {
             $this->drawCropMarks();
         }
 
-        $this->writeTextContent();
+        $this->writeContent();
+//        $this->writeTextContent();
 
         return $this;
     }
@@ -84,8 +87,7 @@ class TCPDFRenderer implements PDFRendererInterface
         $this->pdf->AddPage($format, $page_format);
     }
 
-    private function writeTextContent()
-    {
+    private function prepareFonts() {
         $fontName = 'Helvetica';
 
 //        $font = 'VWHeadlineOT/VWHeadlineOT-Black.ttf';
@@ -112,6 +114,74 @@ class TCPDFRenderer implements PDFRendererInterface
 //            dd($fontName);
             }
         }
+
+        return $fontName;
+    }
+
+    private function drawContentLayout($contentLayout, $text) {
+        $colorString = $contentLayout->color ?: '0,0,0,100';
+        $colors = explode(',', $colorString);
+
+        $fontFamily = $contentLayout->fontFamily ?: 'Helvetica';
+        $fontSize = (float)$contentLayout->fontSize > 0 ? (float)$contentLayout->fontSize : 12.0;
+
+
+
+        $this->pdf->SetTextColor($colors[0], $colors[1], $colors[2], $colors[3]);
+        $this->pdf->SetFont($fontFamily, '', $fontSize);
+        $this->pdf->MultiCell(
+            $w = (float)$contentLayout->width,
+            $h = (float)$contentLayout->height,
+            $txt = $text,
+            $border = $this->debug,
+            $align = 'L',
+            $fill = false,
+            $ln = 1,
+            $x = (float)$contentLayout->x + $this->margin,
+            $y = (float)$contentLayout->y + $this->margin,
+            $reseth = true,
+            $stretch = 0,
+            $ishtml = false,
+            $autopadding = true,
+            $maxh = 0,
+            $valign = 'T',
+            $fitcell = false
+        );
+    }
+
+    private function drawContent($content)
+    {
+        $colorString = isset($content->layout->color) ? $content->layout->color : '0,0,0,100';
+        $colors = explode(',', $colorString);
+
+        $fontFamily = isset($content->layout->fontFamily) ? $content->layout->fontFamily : 'Helvetica';
+        $fontSize = isset($content->layout->fontSize) && (float)$content->layout->fontSize > 0 ? (float)$content->layout->fontSize : 12.0;
+
+        $this->pdf->SetTextColor($colors[0], $colors[1], $colors[2], $colors[3]);
+        $this->pdf->SetFont($fontFamily, '', $fontSize);
+        $this->pdf->MultiCell(
+            $w = isset($content->layout->width) ? (float)$content->layout->width : 0,
+            $h = isset($content->layout->height) ? (float)$content->layout->height : 0,
+            $txt = $content->text,
+            $border = $this->debug,
+            $align = 'L',
+            $fill = false,
+            $ln = 1,
+            $x = isset($content->layout->x) ? (float)$content->layout->x + $this->margin : $this->margin,
+            $y = isset($content->layout->y) ? (float)$content->layout->y + $this->margin : $this->margin,
+            $reseth = true,
+            $stretch = 0,
+            $ishtml = false,
+            $autopadding = true,
+            $maxh = 0,
+            $valign = 'T',
+            $fitcell = false
+        );
+    }
+
+    private function writeTextContent()
+    {
+        $fontName = $this->prepareFonts();
 
         foreach ($this->contents as $content) {
 
@@ -171,43 +241,25 @@ class TCPDFRenderer implements PDFRendererInterface
                 $contentLayouts = $content->layouts()->where('layout_id', '=', $this->layout->id)->get();
 
                 foreach ($contentLayouts as $contentLayout) {
-                    $colorString = $contentLayout->color ?: '0,0,0,100';
-                    $colors = explode(',', $colorString);
-
-                    $fontFamily = $contentLayout->fontFamily ?: 'Helvetica';
-                    $fontFamily = $fontName;
-                    $fontSize = (float)$contentLayout->fontSize > 0 ? (float)$contentLayout->fontSize : 12.0;
-
-                    $this->pdf->SetTextColor($colors[0], $colors[1], $colors[2], $colors[3]);
-                    $this->pdf->SetFont($fontFamily, '', $fontSize);
-                    $this->pdf->MultiCell(
-                        $w = (float)$contentLayout->width,
-                        $h = (float)$contentLayout->height,
-                        $txt = $text,
-                        $border = $this->debug,
-                        $align = 'L',
-                        $fill = false,
-                        $ln = 1,
-                        $x = (float)$contentLayout->x + $this->margin,
-                        $y = (float)$contentLayout->y + $this->margin,
-                        $reseth = true,
-                        $stretch = 0,
-                        $ishtml = false,
-                        $autopadding = true,
-                        $maxh = 0,
-                        $valign = 'T',
-                        $fitcell = false
-                    );
+                    $this->drawContentLayout($contentLayout, $text);
                 }
             }
         }
     }
 
+    private function writeContent()
+    {
+        foreach ($this->contents as $content) {
+            $this->drawContent($content);
+        }
+    }
+
     private function drawBackground()
     {
-        $backgroundImage = public_path() . \Config::get('paths.campaigns.components.print') . $this->layout->pivot->background;
+        $backgroundImage = $this->layout->backgroundImage;
 
-        if ($this->layout->pivot->background && File::exists($backgroundImage)) {
+        if (File::exists($backgroundImage)) {
+
             // get the current page break margin
             $bMargin = $this->pdf->getBreakMargin();
 
@@ -289,18 +341,23 @@ class TCPDFRenderer implements PDFRendererInterface
         $this->pdf->Output($fileName, 'D');
     }
 
-    public function attachment()
+    public function attachment($fileName)
     {
-        // TODO: Implement attachment() method.
+        return $this->pdf->Output($fileName, 'E');
     }
 
-    public function saveToFile($fileName)
+    public function toString()
     {
-        $path = $this->getFilePath();
+        return $this->pdf->Output('', 'S');
+    }
 
+    public function saveToFile($fileName, $path)
+    {
         File::exists($path) or File::makeDirectory($path, 755, true);
 
         $this->pdf->Output($path . $fileName, 'F');
+
+        return $path . $fileName;
     }
 
     public function setTargetId($id)

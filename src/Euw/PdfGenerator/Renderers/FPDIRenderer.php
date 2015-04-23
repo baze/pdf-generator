@@ -44,7 +44,7 @@ class FPDIRenderer implements PDFRendererInterface {
 		$this->pdf->SetSubject( 'Document subject' );
 		$this->pdf->SetKeywords( 'e&w, test, pdf, generator' );
 
-		if ( $this->layout->backgroundImage ) {
+		if ( isset( $this->layout->backgroundImage ) ) {
 			$this->drawBackground();
 		}
 
@@ -145,7 +145,9 @@ class FPDIRenderer implements PDFRendererInterface {
 		$colorString = isset( $content->layout->color ) ? $content->layout->color : '0,0,0,100';
 		$colors      = explode( ',', $colorString );
 
-		$fontFamily = isset( $content->layout->fontFamily ) ? $content->layout->fontFamily : 'Helvetica';
+		$defaultFont = isset( $this->layout->defaultFont ) ? $this->layout->defaultFont : 'Helvetica';
+
+		$fontFamily = isset( $content->layout->fontFamily ) ? $content->layout->fontFamily : $defaultFont;
 
 		// fonts tested successfully
 //		$fontFamily = 'VWHeadlineOT/VWHeadlineOT-Black.ttf';
@@ -159,8 +161,6 @@ class FPDIRenderer implements PDFRendererInterface {
 //		$fontFamily = 'AudiTypeV01/AudiTypeV01-Bold.ttf';
 
 		$fontFamily = $this->prepareFont( $fontFamily );
-
-//        dd($fontFamily);
 
 		$fontSize = isset( $content->layout->fontSize ) && (float) $content->layout->fontSize > 0 ? (float) $content->layout->fontSize : 12.0;
 		$this->pdf->SetFont( $fontFamily, '', $fontSize, '', false );
@@ -188,6 +188,7 @@ class FPDIRenderer implements PDFRendererInterface {
 	}
 
 	private function writeContent() {
+
 		foreach ( $this->contents as $content ) {
 			$this->drawContent( $content );
 		}

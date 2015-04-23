@@ -10,7 +10,6 @@ class FPDIRenderer implements PDFRendererInterface {
 	private $layout;
 	private $margin = 0;
 	private $bleed = 0;
-	public $cropMarks = true;
 	private $targetId;
 	private $debug = 0;
 
@@ -30,7 +29,7 @@ class FPDIRenderer implements PDFRendererInterface {
 		$this->layout   = $layout;
 		$this->contents = $contents;
 
-		if ( $this->cropMarks ) {
+		if ( $this->layout->cropMarks ) {
 			$this->margin = $this->layout->margin;
 			$this->bleed  = $this->layout->bleed;
 		}
@@ -48,7 +47,7 @@ class FPDIRenderer implements PDFRendererInterface {
 			$this->drawBackground();
 		}
 
-		if ( $this->cropMarks ) {
+		if ( $this->layout->cropMarks ) {
 			$this->drawCropMarks();
 		}
 

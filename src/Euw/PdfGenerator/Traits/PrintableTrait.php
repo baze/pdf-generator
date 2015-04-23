@@ -8,6 +8,7 @@ class PageLayout {
 	public $height;
 	public $margin;
 	public $bleed;
+	public $cropMarks;
 	public $imagePath;
 	public $defaultFont;
 
@@ -22,6 +23,9 @@ class PageLayout {
 
 		$this->defaultFont     = $layout && isset( $layout->defaultFont ) ? $layout->defaultFont : 'Helvetica';
 		$this->backgroundImage = $layout && isset( $layout->backgroundImage ) ? $layout->backgroundImage : null;
+		$this->cropMarks       = $layout && isset( $layout->cropMarks ) ? $layout->cropMarks : false;
+
+		$this->setImagePath(public_path());
 	}
 
 	public function setImagePath( $path ) {
@@ -30,10 +34,6 @@ class PageLayout {
 		if ( $this->layout && isset( $this->layout->background ) ) {
 			$this->backgroundImage = $path . $this->layout->background;
 		}
-	}
-
-	public function getImagePath() {
-		return $this->imagePath ?: public_path();
 	}
 
 	public function getLayout() {

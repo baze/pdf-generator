@@ -26,6 +26,7 @@ class FPDIRenderer implements PDFRendererInterface {
 	}
 
 	public function render( $layout, $contents = [ ] ) {
+
 		$this->layout   = $layout;
 		$this->contents = $contents;
 
@@ -36,8 +37,15 @@ class FPDIRenderer implements PDFRendererInterface {
 
 		$this->addPage();
 
+		// set document information
+		$this->pdf->SetCreator( PDF_CREATOR );
+		$this->pdf->SetAuthor( 'eberle & wollweber COMMUNICATIONS GmbH' );
+		$this->pdf->SetTitle( 'Document title' );
+		$this->pdf->SetSubject( 'Document subject' );
+		$this->pdf->SetKeywords( 'e&w, test, pdf, generator' );
+
 		if ( $this->layout->backgroundImage ) {
-			$this->drawBackground();
+//			$this->drawBackground();
 		}
 
 		if ( $this->cropMarks ) {
@@ -102,8 +110,22 @@ class FPDIRenderer implements PDFRendererInterface {
 
 		if ( File::exists( $fontfile ) ) {
 
-//            $path = $this->getFontsPath() . 'converted/';
-//            File::exists( $path ) or File::makeDirectory( $path, 755, true );
+			/*
+			 * *.otf fonts don't work, they return false on conversion. use fontforge to convert them:
+			 *
+			 * save as otf2ttf.sh:
+				#!/usr/local/bin/fontforge
+				# Quick and dirty hack: converts a font to truetype (.ttf)
+				Print("Opening "+$1);
+				Open($1);
+				Print("Saving "+$1:r+".ttf");
+				Generate($1:r+".ttf");
+				Quit(0);
+			 *
+			 * fontforge -script otf2ttf.sh FONTNAME.otf
+			 *
+			 * for i in *.otf; do fontforge -script otf2ttf.sh $i; done
+			 */
 
 			$fontName = TCPDF_FONTS::addTTFfont(
 				$fontfile,
@@ -125,14 +147,26 @@ class FPDIRenderer implements PDFRendererInterface {
 
 		$fontFamily = isset( $content->layout->fontFamily ) ? $content->layout->fontFamily : 'Helvetica';
 
-//        $fontFamily = 'VWHeadlineOT/VWHeadlineOT-Black.ttf';
+		// fonts tested successfully
+//		$fontFamily = 'VWHeadlineOT/VWHeadlineOT-Black.ttf';
+//		$fontFamily = 'SkodaPro/SkodaPro_Bold.ttf';
+//		$fontFamily = 'Roskrift/Roskrift_Clean.ttf';
+//		$fontFamily = 'ToyotaText/ToyotaText_Bd.ttf';
+//		$fontFamily = 'GillSans.ttf';
+//		$fontFamily = 'Strangelove/strangelove-next-narrow.ttf';
+//		$fontFamily = 'ToyotaDisplay/ToyotaDisplay_Bd.ttf';
+//		$fontFamily = 'handsean.ttf';
+//		$fontFamily = 'AudiTypeV01/AudiTypeV01-Bold.ttf';
 
 		$fontFamily = $this->prepareFont( $fontFamily );
 
+//        dd($fontFamily);
+
 		$fontSize = isset( $content->layout->fontSize ) && (float) $content->layout->fontSize > 0 ? (float) $content->layout->fontSize : 12.0;
+		$this->pdf->SetFont( $fontFamily, '', $fontSize, '', false );
 
 		$this->pdf->SetTextColor( $colors[0], $colors[1], $colors[2], $colors[3] );
-		$this->pdf->SetFont( $fontFamily, '', $fontSize );
+
 		$this->pdf->MultiCell(
 			$w = isset( $content->layout->width ) ? (float) $content->layout->width : 0,
 			$h = isset( $content->layout->height ) ? (float) $content->layout->height : 0,

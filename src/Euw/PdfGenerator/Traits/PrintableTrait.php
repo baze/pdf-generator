@@ -85,7 +85,7 @@ trait PrintableTrait {
 
 	public function render() {
 		$pageLayout = $this->getPageLayout();
-		$pageLayout->setImagePath( $this->getOutputPath() );
+		$pageLayout->setImagePath( $this->getImagePath() );
 
 		$contentLayout = new ContentLayout( $this, $pageLayout );
 		$contents      = $contentLayout->contents();
@@ -109,6 +109,17 @@ trait PrintableTrait {
 
 	public function toString() {
 		return $this->render()->toString();
+	}
+
+	public function getFile( $filename = 'coupon.pdf' ) {
+
+		$path = $this->getOutputPath();
+
+		if ( File::exists( $path . $filename ) ) {
+			return $path . $filename;
+		}
+
+		return $this->render()->saveToFile( $filename, $path );
 	}
 
 }

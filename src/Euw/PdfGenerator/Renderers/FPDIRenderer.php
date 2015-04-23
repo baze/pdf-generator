@@ -45,7 +45,7 @@ class FPDIRenderer implements PDFRendererInterface {
 		$this->pdf->SetKeywords( 'e&w, test, pdf, generator' );
 
 		if ( $this->layout->backgroundImage ) {
-//			$this->drawBackground();
+			$this->drawBackground();
 		}
 
 		if ( $this->cropMarks ) {

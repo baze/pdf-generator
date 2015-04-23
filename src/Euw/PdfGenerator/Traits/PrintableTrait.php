@@ -111,11 +111,11 @@ trait PrintableTrait {
 		return $this->render()->toString();
 	}
 
-	public function getFile( $filename = 'coupon.pdf' ) {
+	public function getFile( $filename = 'coupon.pdf', $overwrite = false ) {
 
 		$path = $this->getOutputPath();
 
-		if ( File::exists( $path . $filename ) ) {
+		if ( \File::exists( $path . $filename) && ! $overwrite ) {
 			return $path . $filename;
 		}
 

@@ -4,9 +4,9 @@ use App\User;
 
 interface Printable {
 
-	public function attachment( $filename );
-	public function download( $filename );
-	public function getFile( $filename );
+	public function attachment( $filename = 'coupon.pdf' );
+	public function download( $filename = 'coupon.pdf' );
+	public function getFile( $filename = 'coupon.pdf', $overwrite = false );
 	public function render();
 	public function show();
 	public function toString();

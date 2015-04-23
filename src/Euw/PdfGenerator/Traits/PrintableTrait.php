@@ -20,14 +20,14 @@ class PageLayout {
 		$this->bleed  = $layout && isset( $layout->bleed ) ? $layout->bleed : 0;
 		$this->margin = $layout && isset( $layout->margin ) ? $layout->margin : 0;
 
-		$this->defaultFont = $layout && isset( $layout->defaultFont ) ? $layout->defaultFont : 'Helvetica';
-		$this->backgroundImage = $layout && isset( $layout->backgroundImage) ? $layout->backgroundImage : null;
+		$this->defaultFont     = $layout && isset( $layout->defaultFont ) ? $layout->defaultFont : 'Helvetica';
+		$this->backgroundImage = $layout && isset( $layout->backgroundImage ) ? $layout->backgroundImage : null;
 	}
 
-	public function setImagePath($path) {
+	public function setImagePath( $path ) {
 		$this->imagePath = $path;
 
-		if ( isset( $this->layout->background ) ) {
+		if ( $this->layout && isset( $this->layout->background ) ) {
 			$this->backgroundImage = $path . $this->layout->background;
 		}
 	}
@@ -63,9 +63,11 @@ class ContentLayout {
 	public function contents() {
 		$content = [ ];
 
-		foreach ( $this->layout->contents as $c ) {
-			$text      = $this->content->{$c->identifier};
-			$content[] = new Content( $text, $c->layout );
+		if ( $this->layout ) {
+			foreach ( $this->layout->contents as $c ) {
+				$text      = $this->content->{$c->identifier};
+				$content[] = new Content( $text, $c->layout );
+			}
 		}
 
 		return $content;

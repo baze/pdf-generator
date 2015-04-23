@@ -29,10 +29,8 @@ class FPDIRenderer implements PDFRendererInterface {
 		$this->layout   = $layout;
 		$this->contents = $contents;
 
-		if ( $this->layout->cropMarks ) {
-			$this->margin = $this->layout->margin;
-			$this->bleed  = $this->layout->bleed;
-		}
+		$this->margin = $this->layout->margin;
+		$this->bleed  = $this->layout->bleed;
 
 		$this->addPage();
 

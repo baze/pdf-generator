@@ -1,9 +1,11 @@
 <?php namespace Euw\PdfGenerator\Layouts;
 
+use Euw\PdfGenerator\Contracts\Layout as LayoutContract;
+
 class PageLayout {
 	private $pages = [ ];
 
-	public function __construct( $model, Layout $layout ) {
+	public function __construct( $model, LayoutContract $layout ) {
 
 		foreach ( $layout->pages as $page ) {
 

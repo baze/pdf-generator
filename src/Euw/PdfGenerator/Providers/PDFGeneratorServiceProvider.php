@@ -20,7 +20,8 @@ class PDFGeneratorServiceProvider extends ServiceProvider {
 	public function register() {
 		$this->app->bind( 'pdfgenerator', 'Euw\PdfGenerator\Generators\PDFGenerator' );
 
-		$this->app->register( 'Euw\PdfGenerator\Providers\PDFRendererServiceProvider' );
+		$this->app->bind( 'Euw\PdfGenerator\Contracts\Layout', 'Euw\PdfGenerator\Layouts\JsonLayout' );
+		$this->app->bind( 'Euw\PdfGenerator\Renderers\PDFRendererInterface', 'Euw\PdfGenerator\Renderers\FPDIRenderer' );
 	}
 
 	public function boot() {

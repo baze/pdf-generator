@@ -24,15 +24,12 @@ class FPDIRenderer implements PDFRendererInterface {
 		return public_path() . '/fonts/';
 	}
 
-	public function render( $layout, $contents = [ ] ) {
+	public function render( $layout, $pages = [ ] ) {
 
 		$this->layout   = $layout;
-		$this->contents = $contents;
 
 		$this->margin = $this->layout->margin;
 		$this->bleed  = $this->layout->bleed;
-
-		$this->addPage();
 
 		// set document information
 		$this->pdf->SetCreator( PDF_CREATOR );
@@ -41,15 +38,19 @@ class FPDIRenderer implements PDFRendererInterface {
 		$this->pdf->SetSubject( 'Document subject' );
 		$this->pdf->SetKeywords( 'e&w, test, pdf, generator' );
 
-		if ( isset( $this->layout->backgroundImage ) ) {
-			$this->drawBackground();
-		}
+		foreach ($pages as $page) {
+			$this->addPage();
 
-		if ( $this->layout->cropMarks ) {
-			$this->drawCropMarks();
-		}
+			if ( isset( $page['background'] ) ) {
+				$this->drawBackground( $page['background'] );
+			}
 
-		$this->writeContent();
+			$this->writeContent($page['content']);
+
+			if ( $this->layout->cropMarks ) {
+				$this->drawCropMarks();
+			}
+		}
 
 		return $this;
 	}
@@ -139,24 +140,12 @@ class FPDIRenderer implements PDFRendererInterface {
 	}
 
 	private function drawContent( $content ) {
+
 		$colorString = isset( $content->layout->color ) ? $content->layout->color : '0,0,0,100';
 		$colors      = explode( ',', $colorString );
 
 		$defaultFont = isset( $this->layout->defaultFont ) ? $this->layout->defaultFont : 'Helvetica';
-
 		$fontFamily = isset( $content->layout->fontFamily ) ? $content->layout->fontFamily : $defaultFont;
-
-		// fonts tested successfully
-//		$fontFamily = 'VWHeadlineOT/VWHeadlineOT-Black.ttf';
-//		$fontFamily = 'SkodaPro/SkodaPro_Bold.ttf';
-//		$fontFamily = 'Roskrift/Roskrift_Clean.ttf';
-//		$fontFamily = 'ToyotaText/ToyotaText_Bd.ttf';
-//		$fontFamily = 'GillSans.ttf';
-//		$fontFamily = 'Strangelove/strangelove-next-narrow.ttf';
-//		$fontFamily = 'ToyotaDisplay/ToyotaDisplay_Bd.ttf';
-//		$fontFamily = 'handsean.ttf';
-//		$fontFamily = 'AudiTypeV01/AudiTypeV01-Bold.ttf';
-
 		$fontFamily = $this->prepareFont( $fontFamily );
 
 		$fontSize = isset( $content->layout->fontSize ) && (float) $content->layout->fontSize > 0 ? (float) $content->layout->fontSize : 12.0;
@@ -184,19 +173,19 @@ class FPDIRenderer implements PDFRendererInterface {
 		);
 	}
 
-	private function writeContent() {
+	private function writeContent($pageContent) {
 
-		foreach ( $this->contents as $content ) {
+		foreach ( $pageContent as $content ) {
 			$this->drawContent( $content );
 		}
 	}
 
-	private function drawBackground() {
-		$backgroundImage = $this->layout->backgroundImage;
+	private function drawBackground($background) {
+		$backgroundPath = $this->layout->imagePath . $background;
 
-		if ( File::exists( $backgroundImage ) ) {
+		if ( File::exists( $backgroundPath ) ) {
 
-			$this->pdf->setSourceFile( $backgroundImage );
+			$this->pdf->setSourceFile( $backgroundPath );
 
 			$tplIdx = $this->pdf->importPage( 1, '/MediaBox' );
 

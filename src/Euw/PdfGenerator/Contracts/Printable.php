@@ -12,7 +12,7 @@ interface Printable {
 	public function toString();
 
 	// implement
-	public function getLayout();
+//	public function getLayout();
 	public function getImagePath();
 	public function getOutputPath();
 	public function personalize( User $user );
